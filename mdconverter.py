@@ -16,7 +16,7 @@ def main():
 
     # read each available markdown and process it
     for file in filelist:
-        with open(file, 'r') as f:
+        with open(str(file), 'r') as f:
             # file name without extension
             filename = str(file).replace(".md", "")
             # read the content of the file
@@ -79,7 +79,7 @@ def main():
                     value = deepcopy(i)
                     value = value[1:]
                     objectified[key] = value
-                #print(json.dumps(objectified, sort_keys=True, indent=4))
+                # print(json.dumps(objectified, sort_keys=True, indent=4))
 
                 # now input this content to the schema
                 for i in range(0, len(objectified['key'])):
