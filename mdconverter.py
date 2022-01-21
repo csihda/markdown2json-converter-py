@@ -9,6 +9,14 @@ def main():
     # check if there are markdowns file within the folder
     filelist = list(Path('.').glob('**/*.md'))
 
+    # exclude README.md files
+    readme_index = False
+    for i in range(0, len(filelist)):
+        if 'README.md' == filelist[i].name:
+            readme_index = i
+    if readme_index:
+        filelist.pop(readme_index)
+
     # early exist when no markdowns are found
     if len(filelist) == 0:
         print("No markdown files were found.")
