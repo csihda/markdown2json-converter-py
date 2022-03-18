@@ -90,18 +90,23 @@ def main():
                 # print(json.dumps(objectified, sort_keys=True, indent=4))
 
                 # now input this content to the schema
-                for i in range(0, len(objectified['key'])):
-                    value = {}
-                    if objectified["title"][i] != "":
-                        value["title"] = objectified["title"][i]
-                    if objectified["description"][i] != "":
-                        value["description"] = objectified["description"][i]
-                    if objectified["type"][i] != "":
-                        value["type"] = objectified["type"][i]
-                    if objectified["default value"][i] != "":
-                        value["default"] = objectified["default value"][i]
+                try:
+                    for i in range(0, len(objectified['key'])):
+                        value = {}
+                        if objectified["title"][i] != "":
+                            value["title"] = objectified["title"][i]
+                        if objectified["description"][i] != "":
+                            value["description"] = objectified["description"][i]
+                        if objectified["type"][i] != "":
+                            value["type"] = objectified["type"][i]
+                        if objectified["default value"][i] != "":
+                            value["default"] = objectified["default value"][i]
 
-                    updatedSchema["properties"][objectified["key"][i]] = value
+                        updatedSchema["properties"][objectified["key"][i]] = value
+                except Exception as e:
+                    print(e)
+                    print("Possible typo(s) in '{}.md'. Skipping it.".format(filename))
+                    return
 
                 # now check the required
                 if objectified["required"] != None:
