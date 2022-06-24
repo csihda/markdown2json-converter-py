@@ -218,5 +218,5 @@ Converted description list (.tpl) based on the table:
 
 Rendered description list (.tpl) in the eLabFTW electronic lab. notebook:
 <p align="center">
-  <img src="https://github.com/waldyr/Sublime-Installer/blob/master/sublime_text.png?raw=true" alt="Sublime's custom image"/>
+  <img src="https://raw.githubusercontent.com/csihda/markdown2json-converter-py/main/example_rendered.png" alt="Sublime's custom image"/>
 </p>
