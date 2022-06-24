@@ -195,7 +195,8 @@ Converted description list (.tpl) based on the table:
 <dt>Schema Element 3</dt>
 <dd>Element 3 of the subschema with boolean type</dd>
 </dl>
-<div style="background-color: #ffffff; border: 0px;"><a style="color:#000000;"><strong>Array Sub-Schema</strong></a></div><div>
+<div style="background-color: #ffffff; border: 0px;"><a style="color:#000000;"><strong>Array Sub-Schema</strong></a></div>
+<div>
 <table style="border-collapse: collapse;" border="1">
 <tbody>
 <tr>
