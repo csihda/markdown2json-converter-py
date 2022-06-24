@@ -218,5 +218,5 @@ Converted description list (.tpl) based on the table:
 
 Rendered description list (.tpl) in the eLabFTW electronic lab. notebook:
 <p align="center">
-  <img src="https://raw.githubusercontent.com/csihda/markdown2json-converter-py/main/example_rendered_table.png" alt="example-rendered-elabftw-table"/>
+  <img src="https://raw.githubusercontent.com/csihda/markdown2json-converter-py/main/example_rendered.png" alt="example-rendered-elabftw-table"/>
 </p>
