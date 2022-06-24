@@ -379,7 +379,7 @@ def main():
             print(json.dumps(schema, sort_keys=False, indent=4))
             # loop through array subschemas
             for arr_subschema in array_schemas:
-                description_list +='\n<div style="background-color: #ffffff; border: 0px;"><a style="color:#000000;"><strong>{}</strong></a></div>'.format(arr_subschema["title"])
+                description_list +='\n<div style="background-color: #ffffff; border: 0px;"><a style="color:#000000;"><strong>{}</strong></a></div>\n'.format(arr_subschema["title"])
                 description_list +='<div>\n'
                 description_list +='<table style="border-collapse: collapse;" border="1">\n'
                 description_list +='<tbody>\n'
