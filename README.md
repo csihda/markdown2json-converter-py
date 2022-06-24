@@ -42,44 +42,130 @@ Converted json schema based on the table:
 
 ```
 {
-    "title": "Array Sub-Schema",
-    "description": "Array field with sub-schema",
-    "type": "array",
-    "items": {
-        "type": "object",
-        "required": [
-            "arraySubSchemaEl1",
-            "arraySubSchemaEl2"
-        ],
-        "properties": {
-            "arraySubSchemaEl1": {
-                "title": "Schema Element 1",
-                "description": "Element 1 of the subschema with string type",
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "id": "some schema id",
+    "title": "some schema title",
+    "description": "some schema description",
+    "type": "object",
+    "properties": {
+        "stringField": {
+            "title": "String Field",
+            "description": "String field",
+            "type": "string"
+        },
+        "numberField": {
+            "title": "Number Field [Unit]",
+            "description": "Number field",
+            "type": "number"
+        },
+        "integerField": {
+            "title": "Integer Field [Unit]",
+            "description": "Integer field",
+            "type": "integer"
+        },
+        "booleanField": {
+            "title": "Boolean Field",
+            "description": "Boolean field",
+            "type": "boolean"
+        },
+        "arrayField": {
+            "title": "Array Field",
+            "description": "Array field with string type element",
+            "type": "array",
+            "items": {
                 "type": "string"
             },
-            "arraySubSchemaEl2": {
-                "title": "Schema Element 2",
-                "description": "Element 2 of the subschema with array type",
-                "type": "array",
-                "items": {
+            "minItems": 1,
+            "maxItems": 8
+        },
+        "subSchema": {
+            "title": "Sub-Schema",
+            "description": "Sub-schema",
+            "type": "object",
+            "required": [
+                "subSchemaEl1",
+                "subSchemaEl3"
+            ],
+            "properties": {
+                "subSchemaEl1": {
+                    "title": "Schema Element 1",
+                    "description": "Element 1 of the subschema with string type",
                     "type": "string"
+                },
+                "subSchemaEl2": {
+                    "title": "Schema Element 2",
+                    "description": "Element 2 of the subschema with array type",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "subSchemaEl3": {
+                    "title": "Schema Element 3",
+                    "description": "Element 3 of the subschema with boolean type",
+                    "type": "boolean"
+                }
+            }
+        },
+        "arraySubSchema": {
+            "title": "Array Sub-Schema",
+            "description": "Array field with sub-schema",
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": [
+                    "arraySubSchemaEl1",
+                    "arraySubSchemaEl2"
+                ],
+                "properties": {
+                    "arraySubSchemaEl1": {
+                        "title": "Schema Element 1",
+                        "description": "Element 1 of the subschema with string type",
+                        "type": "string"
+                    },
+                    "arraySubSchemaEl2": {
+                        "title": "Schema Element 2",
+                        "description": "Element 2 of the subschema with array type",
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "arraySubSchemaEl3": {
+                        "title": "Schema Element 3",
+                        "description": "Element 3 of the subschema with string type enumerate",
+                        "type": "string",
+                        "enum": [
+                            "one",
+                            "two",
+                            "three",
+                            "four"
+                        ]
+                    }
                 }
             },
-            "arraySubSchemaEl3": {
-                "title": "Schema Element 3",
-                "description": "Element 3 of the subschema with string type enumerate",
-                "type": "string",
-                "enum": [
-                    "one",
-                    "two",
-                    "three",
-                    "four"
-                ]
-            }
+            "minItems": 1,
+            "maxItems": 7
+        },
+        "stringEnumField": {
+            "title": "String Field Enum.",
+            "description": "String field with enumerate",
+            "type": "string",
+            "enum": [
+                "one",
+                "two",
+                "three",
+                "four"
+            ]
         }
     },
-    "minItems": 1,
-    "maxItems": 7
+    "required": [
+        "stringField",
+        "integerField",
+        "booleanField",
+        "arrayField",
+        "arraySubSchema"
+    ]
 }
 ```
 

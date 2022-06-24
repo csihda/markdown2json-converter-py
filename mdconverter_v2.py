@@ -376,9 +376,9 @@ def main():
                     description_list += "<dt>{}</dt>\n".format(value["title"])
                     description_list += "<dd>{}</dd>\n".format(value["description"])
             description_list += "</dl>"
+            print(json.dumps(schema, sort_keys=False, indent=4))
             # loop through array subschemas
             for arr_subschema in array_schemas:
-                print(json.dumps(arr_subschema, sort_keys=False, indent=4))
                 description_list +='\n<div style="background-color: #ffffff; border: 0px;"><a style="color:#000000;"><strong>{}</strong></a></div>'.format(arr_subschema["title"])
                 description_list +='<div>\n'
                 description_list +='<table style="border-collapse: collapse;" border="1">\n'
