@@ -37,47 +37,82 @@ def validate_table(markdown_table):
                     result = False
                     messages.append("Typo(s) found in the first row")
             elif i == 1:
-                print("Validation: skipping second row")
+                #print("Validation: skipping second row")
+                None
             else:
                 row = [text.strip() for text in row]
                 # check first coloumn / ID
-                if len(row[0].split(".")) > 2:
+                if len(row[ID].split(".")) > 2:
                     result = False
-                    messages.append('Typo is found in "Id" of row no. {0} : |{1}|'.format(i+1, row[0]))
+                    messages.append('Typo is found in "Id" of row no. {0} : |{1}|'.format(i-1, row[ID]))
                 # check second coloumn / KEY
-                if row[1] == "":
+                if row[KEY] == "":
                     result = False
-                    messages.append('"Key" must not be empty. Row no. {0}'.format(i+1))
+                    messages.append('"Key" must not be empty. Row no. {0}'.format(i-1))
                 # check sixth coloumn / TYPE
-                if row[5].lower() not in ["string", "number", "integer", "boolean",""]:
+                if row[TYPE].lower() not in ["string", "number", "integer", "boolean",""]:
                     result = False
-                    messages.append('"Type" must be one of these types: "string", "number", "integer", or "boolean". Row no. {0}: {1}'.format(i+1, row[5]))
+                    messages.append('"Type" must be one of these types: "string", "number", "integer", or "boolean". Row no. {0}: {1}'.format(i-1, row[TYPE]))
                 # check seventh coloumn / OCC
-                minmax = row[6].split("-")
+                minmax = row[OCC].split("-")
                 all_positive_integer_regex = '^\d+$'
-                if row[6] == "":
+                if row[OCC] == "":
                     result = False
-                    messages.append('"Occ" should not be empty. Row no. {}'.format(i+1))
+                    messages.append('"Occ" should not be empty. Row no. {}'.format(i-1))
                 elif len(minmax) > 1:
                     if re.match(all_positive_integer_regex, minmax[0]):
                         minmax[0] = minmax[0]
                     else:
                         result = False
-                        messages.append('Typo is found in "Occ" of row no. {0}: |{1}|'.format(i+1, row[6]))
+                        messages.append('Typo is found in "Occ" of row no. {0}: |{1}|'.format(i-1, row[OCC]))
                     if not re.match(all_positive_integer_regex, minmax[1]):
                         if minmax[1] != "n":
                             result = False
-                            messages.append('Typo is found in "Occ" of row no. {0}: |{1}|'.format(i+1, row[6]))
+                            messages.append('Typo is found in "Occ" of row no. {0}: |{1}|'.format(i-1, row[OCC]))
                     elif minmax[1] == "0":
                         result = False
-                        messages.append('Max. part of "Occ" cannot be zero. Row no. {0}: |{1}|'.format(i+1, row[6]))
+                        messages.append('Max. part of "Occ" cannot be zero. Row no. {0}: |{1}|'.format(i-1, row[OCC]))
                     # check if max is bigger than min
                     if re.match(all_positive_integer_regex, minmax[0]) and re.match(all_positive_integer_regex, minmax[1]):
                         min = int(minmax[0])
                         max = int(minmax[1])
                         if min >= max:
                             result = False
-                            messages.append('Min. value of "Occ" cannot be equal or bigger than the Max. value. Row no. {0}: |{1}|'.format(i+1, row[6]))
+                            messages.append('Min. value of "Occ" cannot be equal or bigger than the Max. value. Row no. {0}: |{1}|'.format(i-1, row[OCC]))
+                # check eight coloumn / ALLOWED_VAL
+                # specific check for number and integer types
+                if row[TYPE].lower() == "number":
+                    values = row[ALLOWED_VAL].split(";")
+                    if not values == ['']:
+                        try:
+                            values = [float(value) for value in values]
+                        except:
+                            result = False
+                            messages.append('"Allowed values" must be numbers. Row no. {0}: |{1}|'.format(i-1, row[ALLOWED_VAL]))
+                if row[TYPE].lower() == "integer":
+                    values = row[ALLOWED_VAL].split(";")
+                    if not values == ['']:
+                        k = i - 1
+                        integer_result = True
+                        try:
+                            # first turn it to float
+                            values = [float(value) for value in values]
+                            for j in range(0, len(values)):
+                                value = values[j]
+                                if not (value % 1 == 0):
+                                    result = False
+                                    integer_result = False  
+                                else:
+                                    values[j] = int(value)
+                            if integer_result == False:
+                                messages.append('"Allowed values" must be integers. Row no. {0}: |{1}|'.format(k, row[ALLOWED_VAL]))
+                        except Exception as e:
+                            print(e)
+                            result = False
+                            messages.append('"Allowed values" must be integers. Row no. {0}: |{1}|'.format(k, row[ALLOWED_VAL]))
+                if row[TYPE].lower() == "" and row[ALLOWED_VAL] != "":
+                    result = False
+                    messages.append('Object or array type cannot have "Allowed values". Row no. {0}: |{1}|'.format(i-1, row[ALLOWED_VAL]))
         return result, messages
 
     except Exception as e:
@@ -93,21 +128,25 @@ def main():
     filelist = list(Path('.').glob('**/*.md'))
 
     # exclude README.md files
-    readme_index = False
+    readme_index = []
     for i in range(0, len(filelist)):
-        if 'README.md' == filelist[i].name:
-            readme_index = i
-    if readme_index:
-        filelist.pop(readme_index)
+        if str(filelist[i].name).lower() == 'readme.md':
+            readme_index.append(i)
+    if len(readme_index)>1:
+        for index in sorted(readme_index, reverse=True):
+            del filelist[index]
 
     # early exist when no markdowns are found
     if len(filelist) == 0:
         print("No markdown files were found.")
         return
+    else:
+        print("{} markdown table(s) found".format(len(filelist)))
 
     # read each available markdown and process it
     for file in filelist:
         with open(str(file), 'r') as f:
+            print(">>> converting {}...".format(str(file)))
             # file name without extension
             filename = str(file).replace(".md", "")
 
@@ -122,7 +161,7 @@ def main():
             if not result:
                 for message in messages:
                     print(message)
-                print("Skipping this file: {}.md".format(filename))
+                print(">>> skipping this file: {}.md".format(filename))
                 return
 
             # create initial schema/dict
@@ -325,9 +364,18 @@ def main():
                             current_subschema_idx = i-1
                             current_row_type = "subschema"
                     if not row[ALLOWED_VAL] == "":
-                        enum_values = row[ALLOWED_VAL].split(";")
-                        enum_values = [val.strip() for val in enum_values]
-                        schema["properties"][row[KEY]]["enum"] = enum_values
+                        if row[TYPE] == "string":
+                            enum_values = row[ALLOWED_VAL].split(";")
+                            enum_values = [val.strip() for val in enum_values]
+                            schema["properties"][row[KEY]]["enum"] = enum_values
+                        if row[TYPE] == "number":
+                            enum_values = row[ALLOWED_VAL].split(";")
+                            enum_values = [float(val.strip()) for val in enum_values]
+                            schema["properties"][row[KEY]]["enum"] = enum_values
+                        if row[TYPE] == "integer":
+                            enum_values = row[ALLOWED_VAL].split(";")
+                            enum_values = [int(val.strip()) for val in enum_values]
+                            schema["properties"][row[KEY]]["enum"] = enum_values
 
                     if (not row[TYPE] == "") and (len(row[OCC].split("-")) == 2):
                         # then this row is an array
@@ -343,7 +391,7 @@ def main():
                             schema["properties"][row[KEY]]["maxItems"] = int(minmax[1])
                 
                     i += 1
-            print("Finished converting {}.md".format(filename))
+            print(">>> finished converting {}.md".format(filename))
             # now create the json file
             json_file = open('{}-json-schema.json'.format(filename), 'w')
             json_file.write(json.dumps(schema, sort_keys=False, indent=4))
@@ -370,13 +418,13 @@ def main():
                 description_list += "<dd>{}</dd>\n".format(value["description"])
             # loop through subschemas
             for subschema in sub_schemas:
-                description_list += "<dt></dt>\n"
-                description_list += "<dt><a><strong>{}</strong></a></dt>\n".format(subschema["title"])
+                description_list += '<dt style="background-color: #ffffff; border: 0px; height: 10px;"></dt>\n'
+                description_list += '<dt style="background-color: #ffffff; border: 0px;"><a style="color: #000000;"><strong>{}</strong></a></dt>\n'.format(subschema["title"])
                 for key, value in subschema["properties"].items():
                     description_list += "<dt>{}</dt>\n".format(value["title"])
                     description_list += "<dd>{}</dd>\n".format(value["description"])
             description_list += "</dl>"
-            print(json.dumps(schema, sort_keys=False, indent=4))
+            #print(json.dumps(schema, sort_keys=False, indent=4))
             # loop through array subschemas
             for arr_subschema in array_schemas:
                 description_list +='\n<div style="background-color: #ffffff; border: 0px;"><a style="color:#000000;"><strong>{}</strong></a></div>\n'.format(arr_subschema["title"])
@@ -401,7 +449,7 @@ def main():
 
 
 
-            print(description_list)
+            # print(description_list)
 
             # create the .tpl file for this
             tpl_file = open("{}-elab-descriptionlist.tpl".format(filename), 'w')

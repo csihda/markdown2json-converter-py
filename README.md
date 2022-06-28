@@ -3,7 +3,7 @@ Need to provide requirements.txt for this script
 
 # markdown2json-converter-py
 
-A simple python script to convert markdown table files to json schema (draft 4 specification version) and description list (.tpl).
+A simple python script to convert markdown table files to json schema (draft 4 specification version) and description list (.tpl). The JavaScript implementation as well as WEB-UI version can be found in https://github.com/csihda/markdown2json-converter.
 
 ## Usage
 
