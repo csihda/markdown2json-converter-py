@@ -8,6 +8,13 @@ import re
 # markdown table column
 ID = 0; KEY = 1; TITLE = 2; UNIT = 3 ; DESCRIPTION = 4; TYPE = 5; OCC = 6; ALLOWED_VAL = 7
 
+def index_containing_substring(the_list, substring):
+    for i, s in enumerate(the_list):
+        if substring in s:
+              return i
+    return -1
+
+
 def get_rid_of_empty(arr):
     res = []
     for i in arr:
@@ -81,35 +88,125 @@ def validate_table(markdown_table):
                             messages.append('Min. value of "Occ" cannot be equal or bigger than the Max. value. Row no. {0}: |{1}|'.format(i-1, row[OCC]))
                 # check eight coloumn / ALLOWED_VAL
                 # specific check for number and integer types
+                # TO DO:
+                # 1. Implement validation for min and mix keywords for types: integer, number, string (char)
                 if row[TYPE].lower() == "number":
-                    values = row[ALLOWED_VAL].split(";")
-                    if not values == ['']:
+                    # check first whether ALLOWED_VAL is supposed to be enumerate or min and max
+                    maxmin_mode = False
+                    if "max:" in row[ALLOWED_VAL].replace(" ", "").lower():
+                        print("Max keyword detected")
+                        maxmin_mode = True
+                        maxmin_keyword = row[ALLOWED_VAL].replace(" ", "").lower().split(";")
+                        # check if the max keyword value is valid
+                        indx = index_containing_substring(maxmin_keyword, "max:")
+                        maxmin_keyword = maxmin_keyword[indx]
+                        maxmin_keyword = maxmin_keyword.split(":")
                         try:
-                            values = [float(value) for value in values]
+                            maxmin_keyword = float(maxmin_keyword[1])
                         except:
                             result = False
-                            messages.append('"Allowed values" must be numbers. Row no. {0}: |{1}|'.format(i-1, row[ALLOWED_VAL]))
-                if row[TYPE].lower() == "integer":
-                    values = row[ALLOWED_VAL].split(";")
-                    if not values == ['']:
-                        k = i - 1
-                        integer_result = True
+                            messages.append('Typo found in "Allowed values". Row no. {0}: |{1}|'.format(i-1, row[ALLOWED_VAL]))
+                    if "min:" in row[ALLOWED_VAL].replace(" ", "").lower():
+                        print("Min keyword detected")
+                        maxmin_mode = True
+                        maxmin_keyword = row[ALLOWED_VAL].replace(" ", "").lower().split(";")
+                        # check if the min keyword value is valid
+                        indx = index_containing_substring(maxmin_keyword, "min:")
+                        maxmin_keyword = maxmin_keyword[indx]
+                        maxmin_keyword = maxmin_keyword.split(":")
                         try:
-                            # first turn it to float
-                            values = [float(value) for value in values]
-                            for j in range(0, len(values)):
-                                value = values[j]
-                                if not (value % 1 == 0):
-                                    result = False
-                                    integer_result = False  
-                                else:
-                                    values[j] = int(value)
-                            if integer_result == False:
-                                messages.append('"Allowed values" must be integers. Row no. {0}: |{1}|'.format(k, row[ALLOWED_VAL]))
-                        except Exception as e:
-                            print(e)
+                            maxmin_keyword = float(maxmin_keyword[1])
+                        except:
                             result = False
-                            messages.append('"Allowed values" must be integers. Row no. {0}: |{1}|'.format(k, row[ALLOWED_VAL]))
+                            messages.append('Typo found in "Allowed values". Row no. {0}: |{1}|'.format(i-1, row[ALLOWED_VAL]))
+                    if not maxmin_mode:
+                        # enumerate
+                        values = row[ALLOWED_VAL].split(";")
+                        if not values == ['']:
+                            try:
+                                values = [float(value) for value in values]
+                            except:
+                                result = False
+                                messages.append('Typo found in "Allowed values". Row no. {0}: |{1}|'.format(i-1, row[ALLOWED_VAL]))
+                if row[TYPE].lower() == "integer":
+                    # check first whether ALLOWED_VAL is supposed to be enumerate or min and max
+                    maxmin_mode = False
+                    if "max:" in row[ALLOWED_VAL].replace(" ", "").lower():
+                        print("Max keyword detected")
+                        maxmin_mode = True
+                        maxmin_keyword = row[ALLOWED_VAL].replace(" ", "").lower().split(";")
+                        # check if the max keyword value is valid
+                        indx = index_containing_substring(maxmin_keyword, "max:")
+                        maxmin_keyword = maxmin_keyword[indx]
+                        maxmin_keyword = maxmin_keyword.split(":")
+                        try:
+                            maxmin_keyword = int(maxmin_keyword[1])
+                        except:
+                            result = False
+                            messages.append('Typo found in "Allowed values". Row no. {0}: |{1}|'.format(i-1, row[ALLOWED_VAL]))
+                    if "min:" in row[ALLOWED_VAL].replace(" ", "").lower():
+                        print("Min keyword detected")
+                        maxmin_mode = True
+                        maxmin_keyword = row[ALLOWED_VAL].replace(" ", "").lower().split(";")
+                        # check if the min keyword value is valid
+                        indx = index_containing_substring(maxmin_keyword, "min:")
+                        maxmin_keyword = maxmin_keyword[indx]
+                        maxmin_keyword = maxmin_keyword.split(":")
+                        try:
+                            maxmin_keyword = int(maxmin_keyword[1])
+                        except:
+                            result = False
+                            messages.append('Typo found in "Allowed values". Row no. {0}: |{1}|'.format(i-1, row[ALLOWED_VAL]))
+                    # enumerate
+                    if not maxmin_mode:
+                        values = row[ALLOWED_VAL].split(";")
+                        if not values == ['']:
+                            k = i - 1
+                            integer_result = True
+                            try:
+                                # first turn it to float
+                                values = [float(value) for value in values]
+                                for j in range(0, len(values)):
+                                    value = values[j]
+                                    if not (value % 1 == 0):
+                                        result = False
+                                        integer_result = False  
+                                    else:
+                                        values[j] = int(value)
+                                if integer_result == False:
+                                    messages.append('Typo found in "Allowed values". Row no. {0}: |{1}|'.format(k, row[ALLOWED_VAL]))
+                            except Exception as e:
+                                result = False
+                                messages.append('Typo found in "Allowed values". Row no. {0}: |{1}|'.format(k, row[ALLOWED_VAL]))
+                if row[TYPE].lower() == "string":
+                    # check first whether ALLOWED_VAL is supposed to be enumerate or min and max
+                    maxmin_mode = False
+                    if "max:" in row[ALLOWED_VAL].replace(" ", "").lower():
+                        print("Max keyword detected")
+                        maxmin_mode = True
+                        maxmin_keyword = row[ALLOWED_VAL].replace(" ", "").lower().split(";")
+                        # check if the max keyword value is valid
+                        indx = index_containing_substring(maxmin_keyword, "max:")
+                        maxmin_keyword = maxmin_keyword[indx]
+                        maxmin_keyword = maxmin_keyword.split(":")
+                        try:
+                            maxmin_keyword = int(maxmin_keyword[1])
+                        except:
+                            result = False
+                            messages.append('Typo found in "Allowed values". Row no. {0}: |{1}|'.format(i-1, row[ALLOWED_VAL]))
+                    if "min:" in row[ALLOWED_VAL].replace(" ", "").lower():
+                        print("Min keyword detected")
+                        maxmin_mode = True
+                        maxmin_keyword = row[ALLOWED_VAL].replace(" ", "").lower().split(";")
+                        # check if the min keyword value is valid
+                        indx = index_containing_substring(maxmin_keyword, "min:")
+                        maxmin_keyword = maxmin_keyword[indx]
+                        maxmin_keyword = maxmin_keyword.split(":")
+                        try:
+                            maxmin_keyword = int(maxmin_keyword[1])
+                        except:
+                            result = False
+                            messages.append('Typo found in "Allowed values". Row no. {0}: |{1}|'.format(i-1, row[ALLOWED_VAL]))
                 if row[TYPE].lower() == "" and row[ALLOWED_VAL] != "":
                     result = False
                     messages.append('Object or array type cannot have "Allowed values". Row no. {0}: |{1}|'.format(i-1, row[ALLOWED_VAL]))
@@ -222,10 +319,42 @@ def main():
                         schema["properties"][upper_row[KEY]]["items"]["properties"][row[KEY]]["description"] = row[DESCRIPTION]
                     if not row[TYPE] == "":
                         schema["properties"][upper_row[KEY]]["items"]["properties"][row[KEY]]["type"] = row[TYPE].lower()
+                    # TO DO:
+                    # 1. Implement max and min keywords for types: number, integer, string (character)
                     if not row[ALLOWED_VAL] == "":
-                        enum_values = row[ALLOWED_VAL].split(";")
-                        enum_values = [val.strip() for val in enum_values]
-                        schema["properties"][upper_row[KEY]]["items"]["properties"][row[KEY]]["enum"] = enum_values
+                        maxmin_mode = False
+                        if "max:" in row[ALLOWED_VAL].replace(" ", "").lower():
+                            maxmin_mode = True
+                            maxmin_keyword = row[ALLOWED_VAL].replace(" ", "").lower()
+                            maxmin_keyword = maxmin_keyword.split(";")
+                            indx = index_containing_substring(maxmin_keyword, "max:")
+                            maxmin_keyword = maxmin_keyword[indx]
+                            maxmin_keyword = maxmin_keyword.split(":")
+                            maxmin_keyword = maxmin_keyword[1]
+                            if row[TYPE] == "string":
+                                schema["properties"][upper_row[KEY]]["items"]["properties"][row[KEY]]["maxLength"] = int(maxmin_keyword)
+                            if row[TYPE] == "number":
+                                schema["properties"][upper_row[KEY]]["items"]["properties"][row[KEY]]["maximum"] = float(maxmin_keyword)
+                            if row[TYPE] == "integer":
+                                schema["properties"][upper_row[KEY]]["items"]["properties"][row[KEY]]["maximum"] = int(maxmin_keyword)
+                        if "min:" in row[ALLOWED_VAL].replace(" ", "").lower():
+                            maxmin_mode = True
+                            maxmin_keyword = row[ALLOWED_VAL].replace(" ", "").lower()
+                            maxmin_keyword = maxmin_keyword.split(";")
+                            indx = index_containing_substring(maxmin_keyword, "min:")
+                            maxmin_keyword = maxmin_keyword[indx]
+                            maxmin_keyword = maxmin_keyword.split(":")
+                            maxmin_keyword = maxmin_keyword[1]
+                            if row[TYPE] == "string":
+                                schema["properties"][upper_row[KEY]]["items"]["properties"][row[KEY]]["minLength"] = int(maxmin_keyword)
+                            if row[TYPE] == "number":
+                                schema["properties"][upper_row[KEY]]["items"]["properties"][row[KEY]]["minimum"] = float(maxmin_keyword)
+                            if row[TYPE] == "integer":
+                                schema["properties"][upper_row[KEY]]["items"]["properties"][row[KEY]]["minimum"] = int(maxmin_keyword)
+                        if not maxmin_mode:
+                            enum_values = row[ALLOWED_VAL].split(";")
+                            enum_values = [val.strip() for val in enum_values]
+                            schema["properties"][upper_row[KEY]]["items"]["properties"][row[KEY]]["enum"] = enum_values
                     if len(row[OCC].split("-")) > 1 :
                         schema["properties"][upper_row[KEY]]["items"]["properties"][row[KEY]]["type"] = "array"
                         schema["properties"][upper_row[KEY]]["items"]["properties"][row[KEY]]["items"] = {}
@@ -276,10 +405,43 @@ def main():
                         schema["properties"][upper_row[KEY]]["properties"][row[KEY]]["description"] = row[DESCRIPTION]
                     if not row[TYPE] == "":
                         schema["properties"][upper_row[KEY]]["properties"][row[KEY]]["type"] = row[TYPE].lower()
+                    # TO DO:
+                    # 1. Implement max and min keywords for types: number, integer, string (character)
                     if not row[ALLOWED_VAL] == "":
-                        enum_values = row[ALLOWED_VAL].split(";")
-                        enum_values = [val.strip() for val in enum_values]
-                        schema["properties"][upper_row[KEY]]["properties"][row[KEY]]["enum"] = enum_values
+                        maxmin_mode = False
+                        if "max:" in row[ALLOWED_VAL].replace(" ", "").lower():
+                            maxmin_mode = True
+                            maxmin_keyword = row[ALLOWED_VAL].replace(" ", "").lower()
+                            maxmin_keyword = maxmin_keyword.split(";")
+                            indx = index_containing_substring(maxmin_keyword, "max:")
+                            maxmin_keyword = maxmin_keyword[indx]
+                            maxmin_keyword = maxmin_keyword.split(":")
+                            maxmin_keyword = maxmin_keyword[1]
+                            if row[TYPE] == "string":
+                                schema["properties"][upper_row[KEY]]["properties"][row[KEY]]["maxLength"] = int(maxmin_keyword)
+                            if row[TYPE] == "number":
+                                schema["properties"][upper_row[KEY]]["properties"][row[KEY]]["maximum"] = float(maxmin_keyword)
+                            if row[TYPE] == "integer":
+                                schema["properties"][upper_row[KEY]]["properties"][row[KEY]]["maximum"] = int(maxmin_keyword)
+                        if "min:" in row[ALLOWED_VAL].replace(" ", "").lower():
+                            maxmin_mode = True
+                            maxmin_keyword = row[ALLOWED_VAL].replace(" ", "").lower()
+                            maxmin_keyword = maxmin_keyword.split(";")
+                            indx = index_containing_substring(maxmin_keyword, "min:")
+                            maxmin_keyword = maxmin_keyword[indx]
+                            maxmin_keyword = maxmin_keyword.split(":")
+                            maxmin_keyword = maxmin_keyword[1]
+                            if row[TYPE] == "string":
+                                schema["properties"][upper_row[KEY]]["properties"][row[KEY]]["minLength"] = int(maxmin_keyword)
+                            if row[TYPE] == "number":
+                                schema["properties"][upper_row[KEY]]["properties"][row[KEY]]["minimum"] = float(maxmin_keyword)
+                            if row[TYPE] == "integer":
+                                schema["properties"][upper_row[KEY]]["properties"][row[KEY]]["minimum"] = int(maxmin_keyword)
+                                
+                        if not maxmin_mode:
+                            enum_values = row[ALLOWED_VAL].split(";")
+                            enum_values = [val.strip() for val in enum_values]
+                            schema["properties"][upper_row[KEY]]["properties"][row[KEY]]["enum"] = enum_values
 
                     if len(row[OCC].split("-")) > 1 :
                         schema["properties"][upper_row[KEY]]["properties"][row[KEY]]["type"] = "array"
@@ -363,19 +525,51 @@ def main():
                             schema["properties"][row[KEY]]["properties"] = {}
                             current_subschema_idx = i-1
                             current_row_type = "subschema"
+                    # TO DO:
+                    # 1. Implement max and min keywords for types: number, integer, string (character)
                     if not row[ALLOWED_VAL] == "":
-                        if row[TYPE] == "string":
-                            enum_values = row[ALLOWED_VAL].split(";")
-                            enum_values = [val.strip() for val in enum_values]
-                            schema["properties"][row[KEY]]["enum"] = enum_values
-                        if row[TYPE] == "number":
-                            enum_values = row[ALLOWED_VAL].split(";")
-                            enum_values = [float(val.strip()) for val in enum_values]
-                            schema["properties"][row[KEY]]["enum"] = enum_values
-                        if row[TYPE] == "integer":
-                            enum_values = row[ALLOWED_VAL].split(";")
-                            enum_values = [int(val.strip()) for val in enum_values]
-                            schema["properties"][row[KEY]]["enum"] = enum_values
+                        maxmin_mode = False
+                        if "max:" in row[ALLOWED_VAL].replace(" ", "").lower():
+                            maxmin_mode = True
+                            maxmin_keyword = row[ALLOWED_VAL].replace(" ", "").lower()
+                            maxmin_keyword = maxmin_keyword.split(";")
+                            indx = index_containing_substring(maxmin_keyword, "max:")
+                            maxmin_keyword = maxmin_keyword[indx]
+                            maxmin_keyword = maxmin_keyword.split(":")
+                            maxmin_keyword = maxmin_keyword[1]
+                            if row[TYPE] == "string":
+                                schema["properties"][row[KEY]]["maxLength"] = int(maxmin_keyword)
+                            if row[TYPE] == "number":
+                                schema["properties"][row[KEY]]["maximum"] = float(maxmin_keyword)
+                            if row[TYPE] == "integer":
+                                schema["properties"][row[KEY]]["maximum"] = int(maxmin_keyword)
+                        if "min:" in row[ALLOWED_VAL].replace(" ", "").lower():
+                            maxmin_mode = True
+                            maxmin_keyword = row[ALLOWED_VAL].replace(" ", "").lower()
+                            maxmin_keyword = maxmin_keyword.split(";")
+                            indx = index_containing_substring(maxmin_keyword, "min:")
+                            maxmin_keyword = maxmin_keyword[indx]
+                            maxmin_keyword = maxmin_keyword.split(":")
+                            maxmin_keyword = maxmin_keyword[1]
+                            if row[TYPE] == "string":
+                                schema["properties"][row[KEY]]["minLength"] = int(maxmin_keyword)
+                            if row[TYPE] == "number":
+                                schema["properties"][row[KEY]]["minimum"] = float(maxmin_keyword)
+                            if row[TYPE] == "integer":
+                                schema["properties"][row[KEY]]["minimum"] = int(maxmin_keyword)
+                        if not maxmin_mode:
+                            if row[TYPE] == "string":
+                                enum_values = row[ALLOWED_VAL].split(";")
+                                enum_values = [val.strip() for val in enum_values]
+                                schema["properties"][row[KEY]]["enum"] = enum_values
+                            if row[TYPE] == "number":
+                                enum_values = row[ALLOWED_VAL].split(";")
+                                enum_values = [float(val.strip()) for val in enum_values]
+                                schema["properties"][row[KEY]]["enum"] = enum_values
+                            if row[TYPE] == "integer":
+                                enum_values = row[ALLOWED_VAL].split(";")
+                                enum_values = [int(val.strip()) for val in enum_values]
+                                schema["properties"][row[KEY]]["enum"] = enum_values
 
                     if (not row[TYPE] == "") and (len(row[OCC].split("-")) == 2):
                         # then this row is an array
